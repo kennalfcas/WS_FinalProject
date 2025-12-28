@@ -1,18 +1,26 @@
-# Use official OpenJDK 17 image
-FROM openjdk:17-jdk-slim
+# Build stage
+FROM eclipse-temurin:17-jdk-alpine AS builder
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy all files from current directory to container
-COPY . .
+# Copy Gradle wrapper and config files first (caching optimization)
+COPY gradlew .
+COPY gradle gradle/
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src/
 
-# Install dependencies and build the project
-RUN chmod +x ./gradlew
-RUN ./gradlew build --no-daemon
+# Make gradlew executable and build
+RUN chmod +x gradlew
+RUN ./gradlew build --no-daemon -x test
 
-# Expose port 8080 (Spring Boot default)
+# Runtime stage
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Copy the built jar from builder stage
+COPY --from=builder /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-
-# Command to run the application
-CMD ["java", "-jar", "build/libs/*.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
