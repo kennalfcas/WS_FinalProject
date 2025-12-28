@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 # Build stage
 FROM eclipse-temurin:17-jdk-alpine AS builder
+=======
+# Use official OpenJDK 17 image
+FROM eclipse-temurin:17-jdk-alpine
+>>>>>>> 05036edc63b3370d71651e55e9fcacaf1723e5f0
 
 WORKDIR /app
 
@@ -23,4 +28,10 @@ WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
+<<<<<<< HEAD
 ENTRYPOINT ["java", "-jar", "app.jar"]
+=======
+
+# Command to run the application
+CMD ["java", "-jar", "build/libs/*.jar"]
+>>>>>>> 05036edc63b3370d71651e55e9fcacaf1723e5f0
