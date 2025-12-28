@@ -1,6 +1,5 @@
-package com.uep.freelance.dto;
+package com.dto;
 
-import com.uep.freelance.model.JobCategory;
 import lombok.Data;
 
 import java.math.BigDecimal;

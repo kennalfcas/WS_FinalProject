@@ -1,4 +1,4 @@
-package com.uep.freelance.dto;
+package com.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,5 +11,5 @@ public class AuthResponse {
     private String firstName;
     private String lastName;
     private String role;
-    private String message;
+    private Long userId;
 }

@@ -1,11 +1,11 @@
-package com.uep.freelance.controller;
+package com.controller;
 
-import com.uep.freelance.model.Payment;
-import com.uep.freelance.model.PaymentMethod;
-import com.uep.freelance.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.model.Payment;
+import com.service.PaymentService;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class PaymentController {
     @PostMapping("/{paymentId}/refund")
     public ResponseEntity<?> refundPayment(@PathVariable Long paymentId) {
         try {
-            Payment payment = paymentService.refundPayment(paymentId);
+            Payment payment = paymentService.releasePayment(paymentId);
             return ResponseEntity.ok(payment);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

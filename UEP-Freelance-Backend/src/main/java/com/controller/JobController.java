@@ -1,91 +1,109 @@
-package com.uep.freelance.controller;
+package com.controller;  // Fixed package path
 
-import com.uep.freelance.dto.JobRequest;
-import com.uep.freelance.model.Job;
-import com.uep.freelance.model.Proposal;
-import com.uep.freelance.model.JobCategory;
-import com.uep.freelance.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
+import com.dto.JobDTO;
+import com.model.JobStatus;
+import com.service.JobService;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/jobs")
 @CrossOrigin(origins = "*")
 public class JobController {
-
+    
     @Autowired
     private JobService jobService;
-
-    @GetMapping
-    public ResponseEntity<List<Job>> getAllOpenJobs() {
-        return ResponseEntity.ok(jobService.getAllOpenJobs());
-    }
-    @GetMapping("/category/{category}")
-    public ResponseEntity<?> getJobsByCategory(@PathVariable String category) {
-        try {
-            JobCategory jobCategory = JobCategory.valueOf(category.toUpperCase());
-            return ResponseEntity.ok(jobService.getJobsByCategory(jobCategory));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid category: " + category);
-        }
-    }
-
+    
     @PostMapping
-    public ResponseEntity<?> createJob(@RequestBody JobRequest jobRequest, Authentication authentication) {
+    public ResponseEntity<?> createJob(@RequestBody JobDTO jobDTO) {
         try {
-            String clientEmail = authentication.getName();
-            Job job = jobService.createJob(jobRequest, clientEmail);
+            JobDTO createdJob = jobService.createJob(jobDTO);
+            return ResponseEntity.ok(createdJob);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping
+    public ResponseEntity<?> getAllJobs() {
+        try {
+            List<JobDTO> jobs = jobService.getAllJobs();
+            return ResponseEntity.ok(jobs);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/open")
+    public ResponseEntity<?> getOpenJobs() {
+        try {
+            List<JobDTO> jobs = jobService.getOpenJobs();
+            return ResponseEntity.ok(jobs);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getJobById(@PathVariable Long id) {
+        try {
+            JobDTO job = jobService.getJobById(id);
             return ResponseEntity.ok(job);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-    @PostMapping("/{jobId}/proposals")
-    public ResponseEntity<?> submitProposal(@PathVariable Long jobId, @RequestBody Map<String, Object> proposalData,
-                                            Authentication authentication) {
-        try {
-            String studentEmail = authentication.getName();
-            String coverLetter = (String) proposalData.get("coverLetter");
-            BigDecimal proposedAmount = new BigDecimal(proposalData.get("proposedAmount").toString());
-            Integer estimatedDays = (Integer) proposalData.get("estimatedDays");
-
-            Proposal proposal = jobService.submitProposal(jobId, studentEmail, coverLetter, proposedAmount, estimatedDays);
-            return ResponseEntity.ok(proposal);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/proposals/{proposalId}/accept")
-    public ResponseEntity<?> acceptProposal(@PathVariable Long proposalId, Authentication authentication) {
-        try {
-            String clientEmail = authentication.getName();
-            Job job = jobService.acceptProposal(proposalId, clientEmail);
-            return ResponseEntity.ok(job);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
+    
     @GetMapping("/my-jobs")
-    public ResponseEntity<?> getMyJobs(Authentication authentication) {
-        String userEmail = authentication.getName();
-
-        List<Job> clientJobs = jobService.getClientJobs(userEmail);
-        List<Job> studentJobs = jobService.getStudentJobs(userEmail);
-
-        Map<String, Object> response = Map.of(
-                "clientJobs", clientJobs,
-                "studentJobs", studentJobs
-        );
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getMyJobs() {
+        try {
+            List<JobDTO> jobs = jobService.getJobsByClient();
+            return ResponseEntity.ok(jobs);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<?> searchJobs(@RequestParam(required = false) String keyword,
+                                       @RequestParam(required = false) String category) {
+        try {
+            List<JobDTO> jobs = jobService.searchJobs(keyword, category);
+            return ResponseEntity.ok(jobs);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateJobStatus(@PathVariable Long id, @RequestParam JobStatus status) {
+        try {
+            JobDTO updatedJob = jobService.updateJobStatus(id, status);
+            return ResponseEntity.ok(updatedJob);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateJob(@PathVariable Long id, @RequestBody JobDTO jobDTO) {
+        try {
+            JobDTO updatedJob = jobService.updateJob(id, jobDTO);
+            return ResponseEntity.ok(updatedJob);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteJob(@PathVariable Long id) {
+        try {
+            jobService.deleteJob(id);
+            return ResponseEntity.ok("Job deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
